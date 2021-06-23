@@ -122,8 +122,8 @@ func NewReadOnlyOperator(factory informers.InformerFactory) AccessManagementInte
 		workspaceRoleGetter:        workspacerole.New(factory.KubeSphereSharedInformerFactory()),
 		clusterRoleGetter:          clusterrole.New(factory.KubernetesSharedInformerFactory()),
 		roleGetter:                 role.New(factory.KubernetesSharedInformerFactory()),
-		devopsProjectLister:        factory.KubeSphereSharedInformerFactory().Devops().V1alpha3().DevOpsProjects().Lister(),
-		namespaceLister:            factory.KubernetesSharedInformerFactory().Core().V1().Namespaces().Lister(),
+		//devopsProjectLister:        factory.KubeSphereSharedInformerFactory().Devops().V1alpha3().DevOpsProjects().Lister(),
+		namespaceLister: factory.KubernetesSharedInformerFactory().Core().V1().Namespaces().Lister(),
 	}
 }
 
