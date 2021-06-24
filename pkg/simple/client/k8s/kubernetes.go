@@ -17,6 +17,7 @@ limitations under the License.
 package k8s
 
 import (
+	"fmt"
 	"strings"
 
 	snapshotclient "github.com/kubernetes-csi/external-snapshotter/client/v3/clientset/versioned"
@@ -109,6 +110,7 @@ func NewKubernetesClient(options *KubernetesOptions) (Client, error) {
 
 	config.QPS = options.QPS
 	config.Burst = options.Burst
+	fmt.Println("=================", config.BearerToken, "===", config.Password)
 
 	var k kubernetesClient
 	k.k8s, err = kubernetes.NewForConfig(config)

@@ -61,6 +61,7 @@ func (t *tenantOperator) ListDevOpsProjects(user user.Info, workspace string, qu
 
 	// allowed list devops project in the specified scope
 	if decision == authorizer.DecisionAllow {
+		fmt.Println("t.resourceGetter.List(devopsv1alpha3.ResourcePluralDevOpsProject")
 		result, err := t.resourceGetter.List(devopsv1alpha3.ResourcePluralDevOpsProject, "", queryParam)
 		if err != nil {
 			klog.Error(err)
@@ -88,6 +89,7 @@ func (t *tenantOperator) ListDevOpsProjects(user user.Info, workspace string, qu
 		controlledDevOpsProject := obj.(*corev1.Namespace).Labels[constants.DevOpsProjectLabelKey]
 		// skip if not controlled by devops project
 		if controlledDevOpsProject == "" {
+			klog.Warningf("no devops project found in namespace %s", roleBinding.Namespace)
 			continue
 		}
 

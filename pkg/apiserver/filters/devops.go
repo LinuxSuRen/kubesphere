@@ -17,6 +17,7 @@ limitations under the License.
 package filters
 
 import (
+	"fmt"
 	"kubesphere.io/kubesphere/pkg/simple/client/devops/jenkins"
 	"net/http"
 	"net/http/httputil"
@@ -32,7 +33,8 @@ import (
 
 // WithDevOpsAPIServer proxy request to DevOps service if requests path has the APIGroup with devops.kubesphere.io
 func WithDevOpsAPIServer(handler http.Handler, config *jenkins.Options, failed proxy.ErrorResponder) http.Handler {
-	if config.DevOpsServiceAddress == "" {
+	if config.DevOpsServiceAddress == "" || config.K8sBearerToken == "" {
+		klog.V(6).Info("The DevOps service address or k8s token is empty, the proxy of DevOps server was not enabled")
 		// this filter rely on a separate DevOps address
 		// do not pass the proxy if there's no service address
 		return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -49,19 +51,25 @@ func WithDevOpsAPIServer(handler http.Handler, config *jenkins.Options, failed p
 		}
 
 		if info.APIGroup == "devops.kubesphere.io" {
-			devopsURL := url.URL{
-				Scheme: req.URL.Scheme,
-				Host:   config.DevOpsServiceAddress,
-			}
-			if devopsURL.Scheme == "" {
-				devopsURL.Scheme = "http"
-			}
-
-			devopsProxy := httputil.NewSingleHostReverseProxy(&devopsURL)
-			devopsProxy.ServeHTTP(w, req)
-			return
+			serverAsProxy(w, req, config.DevOpsServiceAddress, config.K8sBearerToken)
+		} else  if info.APIGroup == "tenant.kubesphere.io" && info.Resource == "devops" {
+			serverAsProxy(w, req, config.DevOpsPluginServiceAddress, config.K8sBearerToken)
+		} else {
+			handler.ServeHTTP(w, req)
 		}
-
-		handler.ServeHTTP(w, req)
 	})
+}
+
+func serverAsProxy(w http.ResponseWriter, req *http.Request, server, token string) {
+	devopsURL := url.URL{
+		Scheme: req.URL.Scheme,
+		Host:   server,
+	}
+	if devopsURL.Scheme == "" {
+		devopsURL.Scheme = "http"
+	}
+
+	req.Header.Set("X-Authorization", fmt.Sprintf("bearer %s", token))
+	devopsProxy := httputil.NewSingleHostReverseProxy(&devopsURL)
+	devopsProxy.ServeHTTP(w, req)
 }

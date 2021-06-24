@@ -18,6 +18,7 @@ package config
 
 import (
 	"fmt"
+	"kubesphere.io/kubesphere/pkg/simple/client/devops/jenkins"
 	"reflect"
 	"strings"
 
@@ -30,7 +31,6 @@ import (
 	"kubesphere.io/kubesphere/pkg/simple/client/alerting"
 	"kubesphere.io/kubesphere/pkg/simple/client/auditing"
 	"kubesphere.io/kubesphere/pkg/simple/client/cache"
-	"kubesphere.io/kubesphere/pkg/simple/client/devops/jenkins"
 	"kubesphere.io/kubesphere/pkg/simple/client/events"
 	"kubesphere.io/kubesphere/pkg/simple/client/k8s"
 	"kubesphere.io/kubesphere/pkg/simple/client/kubeedge"
@@ -44,7 +44,6 @@ import (
 	"kubesphere.io/kubesphere/pkg/simple/client/openpitrix"
 	"kubesphere.io/kubesphere/pkg/simple/client/s3"
 	"kubesphere.io/kubesphere/pkg/simple/client/servicemesh"
-	"kubesphere.io/kubesphere/pkg/simple/client/sonarqube"
 )
 
 // Package config saves configuration for running KubeSphere components
@@ -85,7 +84,6 @@ const (
 // Config defines everything needed for apiserver to deal with external services
 type Config struct {
 	DevopsOptions         *jenkins.Options                           `json:"devops,omitempty" yaml:"devops,omitempty" mapstructure:"devops"`
-	SonarQubeOptions      *sonarqube.Options                         `json:"sonarqube,omitempty" yaml:"sonarQube,omitempty" mapstructure:"sonarqube"`
 	KubernetesOptions     *k8s.KubernetesOptions                     `json:"kubernetes,omitempty" yaml:"kubernetes,omitempty" mapstructure:"kubernetes"`
 	ServiceMeshOptions    *servicemesh.Options                       `json:"servicemesh,omitempty" yaml:"servicemesh,omitempty" mapstructure:"servicemesh"`
 	NetworkOptions        *network.Options                           `json:"network,omitempty" yaml:"network,omitempty" mapstructure:"network"`
@@ -110,7 +108,6 @@ type Config struct {
 func New() *Config {
 	return &Config{
 		DevopsOptions:         jenkins.NewDevopsOptions(),
-		SonarQubeOptions:      sonarqube.NewSonarQubeOptions(),
 		KubernetesOptions:     k8s.NewKubernetesOptions(),
 		ServiceMeshOptions:    servicemesh.NewServiceMeshOptions(),
 		NetworkOptions:        network.NewNetworkOptions(),
@@ -239,10 +236,6 @@ func (conf *Config) stripEmptyOptions() {
 
 	if conf.MonitoringOptions != nil && conf.MonitoringOptions.Endpoint == "" {
 		conf.MonitoringOptions = nil
-	}
-
-	if conf.SonarQubeOptions != nil && conf.SonarQubeOptions.Host == "" {
-		conf.SonarQubeOptions = nil
 	}
 
 	if conf.LdapOptions != nil && conf.LdapOptions.Host == "" {

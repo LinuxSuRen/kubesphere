@@ -86,7 +86,6 @@ const (
 
 	WorkspaceTag     = "Workspace"
 	NamespaceTag     = "Namespace"
-	DevOpsProjectTag = "DevOps Project"
 	UserResourceTag  = "User's Resources"
 
 	NamespaceResourcesTag = "Namespace Resources"
