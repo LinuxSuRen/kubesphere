@@ -215,7 +215,8 @@ func (s *APIServer) installKubeSphereAPIs() {
 		s.Config.AuthenticationOptions)
 	amOperator := am.NewOperator(s.KubernetesClient.KubeSphere(),
 		s.KubernetesClient.Kubernetes(),
-		s.InformerFactory)
+		s.InformerFactory,
+		s.Config)
 	rbacAuthorizer := rbac.NewRBACAuthorizer(amOperator)
 
 	urlruntime.Must(configv1alpha2.AddToContainer(s.container, s.Config))
@@ -344,7 +345,7 @@ func (s *APIServer) buildHandlerChain(stopCh <-chan struct{}) {
 	case authorizationoptions.RBAC:
 		excludedPaths := []string{"/oauth/*", "/kapis/config.kubesphere.io/*", "/kapis/version", "/kapis/metrics"}
 		pathAuthorizer, _ := path.NewAuthorizer(excludedPaths)
-		amOperator := am.NewReadOnlyOperator(s.InformerFactory)
+		amOperator := am.NewReadOnlyOperator(s.InformerFactory, s.Config)
 		authorizers = unionauthorizer.New(pathAuthorizer, rbac.NewRBACAuthorizer(amOperator))
 	}
 

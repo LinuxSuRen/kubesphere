@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"kubesphere.io/kubesphere/pkg/apiserver/config"
 
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -112,7 +113,13 @@ type amOperator struct {
 	k8sclient                  kubernetes.Interface
 }
 
-func NewReadOnlyOperator(factory informers.InformerFactory) AccessManagementInterface {
+func NewReadOnlyOperator(factory informers.InformerFactory, config *config.Config) AccessManagementInterface {
+	// Make devops project lister initialize when devops.devopsServiceAddress has text
+	var devopsProjectLister devopslisters.DevOpsProjectLister = nil
+	if config != nil && len(config.DevopsOptions.DevOpsServiceAddress) > 0 {
+		devopsProjectLister = factory.KubeSphereSharedInformerFactory().Devops().V1alpha3().DevOpsProjects().Lister()
+	}
+
 	return &amOperator{
 		globalRoleBindingGetter:    globalrolebinding.New(factory.KubeSphereSharedInformerFactory()),
 		workspaceRoleBindingGetter: workspacerolebinding.New(factory.KubeSphereSharedInformerFactory()),
@@ -122,13 +129,13 @@ func NewReadOnlyOperator(factory informers.InformerFactory) AccessManagementInte
 		workspaceRoleGetter:        workspacerole.New(factory.KubeSphereSharedInformerFactory()),
 		clusterRoleGetter:          clusterrole.New(factory.KubernetesSharedInformerFactory()),
 		roleGetter:                 role.New(factory.KubernetesSharedInformerFactory()),
-		//devopsProjectLister:        factory.KubeSphereSharedInformerFactory().Devops().V1alpha3().DevOpsProjects().Lister(),
-		namespaceLister: factory.KubernetesSharedInformerFactory().Core().V1().Namespaces().Lister(),
+		devopsProjectLister:        devopsProjectLister,
+		namespaceLister:            factory.KubernetesSharedInformerFactory().Core().V1().Namespaces().Lister(),
 	}
 }
 
-func NewOperator(ksClient kubesphere.Interface, k8sClient kubernetes.Interface, factory informers.InformerFactory) AccessManagementInterface {
-	amOperator := NewReadOnlyOperator(factory).(*amOperator)
+func NewOperator(ksClient kubesphere.Interface, k8sClient kubernetes.Interface, factory informers.InformerFactory, config *config.Config) AccessManagementInterface {
+	amOperator := NewReadOnlyOperator(factory, config).(*amOperator)
 	amOperator.ksclient = ksClient
 	amOperator.k8sclient = k8sClient
 	return amOperator
