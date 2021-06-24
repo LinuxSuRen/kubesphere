@@ -40,7 +40,7 @@ func NewDevopsOptions() *Options {
 		Username:       "",
 		Password:       "",
 		MaxConnections: 100,
-		Enable:         false,
+		Enable:         true,
 	}
 }
 
