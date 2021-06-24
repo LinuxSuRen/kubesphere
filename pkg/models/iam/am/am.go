@@ -114,7 +114,8 @@ type amOperator struct {
 }
 
 func NewReadOnlyOperator(factory informers.InformerFactory, config *config.Config) AccessManagementInterface {
-	// Make devops project lister initialize when devops.devopsServiceAddress has text
+	// Make devops project lister initialize when devops.devopsServiceAddress is not empty.
+	// And we keep the DevOps related code lines until DevOps becomes a full independent project.
 	var devopsProjectLister devopslisters.DevOpsProjectLister = nil
 	if config != nil && len(config.DevopsOptions.DevOpsServiceAddress) > 0 {
 		devopsProjectLister = factory.KubeSphereSharedInformerFactory().Devops().V1alpha3().DevOpsProjects().Lister()
